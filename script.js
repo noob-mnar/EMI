@@ -1,25 +1,18 @@
-document.getElementById('emi-form').addEventListener('submit', function(e) {
-  e.preventDefault();
+function calculateEMI() {
+    const loanAmount = parseFloat(document.getElementById('loan-amount').value);
+    const annualInterestRate = parseFloat(document.getElementById('interest-rate').value);
+    const loanTenure = parseInt(document.getElementById('loan-tenure').value);
 
-  const loanAmount = parseFloat(document.getElementById('loanAmount').value);
-  const annualInterest = parseFloat(document.getElementById('interestRate').value);
-  const tenureYears = parseFloat(document.getElementById('loanTenure').value);
+    if (isNaN(loanAmount) || isNaN(annualInterestRate) || isNaN(loanTenure)) {
+        alert('Please fill in all fields');
+        return;
+    }
 
-  const monthlyInterestRate = annualInterest / 12 / 100;
-  const tenureMonths = tenureYears * 12;
+    const monthlyInterestRate = annualInterestRate / 12 / 100;
+    const numberOfMonths = loanTenure * 12;
 
-  const emi = (loanAmount * monthlyInterestRate * Math.pow(1 + monthlyInterestRate, tenureMonths)) /
-              (Math.pow(1 + monthlyInterestRate, tenureMonths) - 1);
+    const emi = (loanAmount * monthlyInterestRate * Math.pow(1 + monthlyInterestRate, numberOfMonths)) / (Math.pow(1 + monthlyInterestRate, numberOfMonths) - 1);
+    const emiFormatted = emi.toFixed(2);
 
-  const resultBox = document.getElementById('result');
-  if (isFinite(emi)) {
-    resultBox.innerHTML = `
-      <h3>EMI Result:</h3>
-      <p><strong>Monthly EMI:</strong> ₹${emi.toFixed(2)}</p>
-      <p><strong>Total Payment:</strong> ₹${(emi * tenureMonths).toFixed(2)}</p>
-      <p><strong>Total Interest:</strong> ₹${((emi * tenureMonths) - loanAmount).toFixed(2)}</p>
-    `;
-  } else {
-    resultBox.innerHTML = `<p>Please enter valid inputs.</p>`;
-  }
-});
+    document.getElementById('emi-value').innerText = emiFormatted;
+}
