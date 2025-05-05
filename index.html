@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bank of Baroda EMI Calculator</title>
+    <style>
+        :root {
+            --primary-color: #0066cc;
+            --secondary-color: #f5f5f5;
+            --text-color: #333;
+            --white: #ffffff;
+            --table-even: #f2f2f2;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            background: var(--white);
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: var(--primary-color);
+            color: var(--white);
+            padding: 25px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .bank-logo {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            height: 50px;
+        }
+        
+        .calculator-container {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 20px;
+        }
+        
+        .input-section {
+            flex: 1;
+            min-width: 350px;
+            padding: 20px;
+            border-right: 1px solid #eee;
+        }
+        
+        .result-section {
+            flex: 1;
+            min-width: 350px;
+            padding: 20px;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 5px rgba(0, 102, 204, 0.3);
+        }
+        
+        .range-container {
+            margin-top: 10px;
+        }
+        
+        .range-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        button {
+            background: var(--primary-color);
+            color: var(--white);
+            border: none;
+            padding: 14px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            width: 100%;
+            margin-top: 10px;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: #0055aa;
+        }
+        
+        .result-card {
+            background: var(--white);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .result-card h3 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .result-value {
+            font-weight: 600;
+        }
+        
+        .highlight {
+            font-size: 1.8rem;
+            color: var(--primary-color);
+            font-weight: 700;
+            margin: 15px 0;
+        }
+        
+        .chart-container {
+            height: 200px;
+            margin: 20px 0;
+            position: relative;
+        }
+        
+        #pie-chart {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+        }
+        
+        #amortization-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+        
+        #amortization-table th {
+            background: var(--primary-color);
+            color: var(--white);
+            padding: 12px;
+            text-align: center;
+        }
+        
+        #amortization-table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+        
+        #amortization-table tr:nth-child(even) {
+            background: var(--table-even);
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .action-buttons button {
+            flex: 1;
+        }
+        
+        .secondary-btn {
+            background: #666;
+        }
+        
+        .secondary-btn:hover {
+            background: #555;
+        }
+        
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            margin-left: 5px;
+            cursor: pointer;
+        }
+        
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.8rem;
+            font-weight: normal;
+        }
+        
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        @media (max-width: 768px) {
+            .calculator-container {
+                flex-direction: column;
+            }
+            
+            .input-section {
+                border-right: none;
+                border-bottom: 1px solid #eee;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .highlight {
+                font-size: 1.5rem;
+            }
+        }
+        
+        /* Dark mode toggle */
+        .dark-mode-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            cursor: pointer;
+        }
+        
+        body.dark-mode {
+            --secondary-color: #121212;
+            --text-color: #f0f0f0;
+            --white: #1e1e1e;
+            --table-even: #2a2a2a;
+            background-color: #121212;
+        }
+        
+        body.dark-mode .container {
+            background: #1e1e1e;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        body.dark-mode input,
+        body.dark-mode select {
+            background-color: #2a2a2a;
+            color: #f0f0f0;
+            border-color: #444;
+        }
+        
+        body.dark-mode .result-card {
+            background: #2a2a2a;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        body.dark-mode #amortization-table td {
+            border-color: #444;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="https://www.bankofbaroda.in/themes/bob/images/logo.png" alt="Bank of Baroda Logo" class="bank-logo">
+            <h1>EMI Calculator</h1>
+            <p>Plan your loan repayments with our easy-to-use calculator</p>
+            <div class="dark-mode-toggle" onclick="toggleDarkMode()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="5"></circle>
+                    <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>
+                </svg>
+            </div>
+        </div>
+        
+        <div class="calculator-container">
+            <div class="input-section">
+                <div class="input-group">
+                    <label for="loan-type">Loan Type</label>
+                    <select id="loan-type" onchange="updateInterestRate()">
+                        <option value="home">Home Loan</option>
+                        <option value="car">Car Loan</option>
+                        <option value="personal">Personal Loan</option>
+                        <option value="education">Education Loan</option>
+                    </select>
+                </div>
+                
+                <div class="input-group">
+                    <label for="principal">Loan Amount (₹)
+                        <span class="tooltip">ℹ️
+                            <span class="tooltiptext">Enter the total amount you wish to borrow</span>
+                        </span>
+                    </label>
+                    <input type="number" id="principal" placeholder="e.g., 10,00,000" min="10000" step="10000">
+                    <div class="range-container">
+                        <input type="range" id="principal-range" min="10000" max="5000000" step="10000" value="1000000">
+                        <div class="range-labels">
+                            <span>₹10k</span>
+                            <span>₹50L</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label for="rate">Interest Rate (% p.a.)
+                        <span class="tooltip">ℹ️
+                            <span class="tooltiptext">Annual interest rate charged by the bank</span>
+                        </span>
+                    </label>
+                    <input type="number" id="rate" placeholder="e.g., 8.5" min="1" max="30" step="0.01">
+                    <div class="range-container">
+                        <input type="range" id="rate-range" min="1" max="30" step="0.1" value="8.5">
+                        <div class="range-labels">
+                            <span>1%</span>
+                            <span>30%</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label for="tenure">Loan Tenure (Years)
+                        <span class="tooltip">ℹ️
+                            <span class="tooltiptext">Duration over which you'll repay the loan</span>
+                        </span>
+                    </label>
+                    <input type="number" id="tenure" placeholder="e.g., 5" min="1" max="30" step="1">
+                    <div class="range-container">
+                        <input type="range" id="tenure-range" min="1" max="30" step="1" value="5">
+                        <div class="range-labels">
+                            <span>1 yr</span>
+                            <span>30 yrs</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <button onclick="calculateEMI()">Calculate EMI</button>
+                <button class="secondary-btn" onclick="resetForm()">Reset</button>
+            </div>
+            
+            <div class="result-section">
+                <div class="result-card">
+                    <h3>Loan Summary</h3>
+                    <div class="result-item">
+                        <span>Loan Type:</span>
+                        <span class="result-value" id="loan-type-display">-</span>
+                    </div>
+                    <div class="result-item">
+                        <span>Loan Amount:</span>
+                        <span class="result-value" id="principal-display">₹0</span>
+                    </div>
+                    <div class="result-item">
+                        <span>Interest Rate:</span>
+                        <span class="result-value" id="rate-display">0%</span>
+                    </div>
+                    <div class="result-item">
+                        <span>Loan Tenure:</span>
+                        <span class="result-value" id="tenure-display">0 years</span>
+                    </div>
+                    
+                    <div class="highlight" id="emi-amount">₹0</div>
+                    <div style="text-align: center; margin-bottom: 10px;">per month</div>
+                    
+                    <div class="result-item">
+                        <span>Total Interest Payable:</span>
+                        <span class="result-value" id="total-interest">₹0</span>
+                    </div>
+                    <div class="result-item">
+                        <span>Total Payment (Principal + Interest):</span>
+                        <span class="result-value" id="total-payment">₹0</span>
+                    </div>
+                </div>
+                
+                <div class="result-card">
+                    <h3>Payment Breakdown</h3>
+                    <div class="chart-container">
+                        <canvas id="pie-chart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="result-card">
+                    <h3>Amortization Schedule</h3>
+                    <div class="table-container">
+                        <table id="amortization-table">
+                            <thead>
+                                <tr>
+                                    <th>Month</th>
+                                    <th>Payment</th>
+                                    <th>Principal</th>
+                                    <th>Interest</th>
+                                    <th>Balance</th>
+                                </tr>
+                            </thead>
+                            <tbody id="amortization-body"></tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="secondary-btn" onclick="downloadPDF()">Download as PDF</button>
+                        <button class="secondary-btn" onclick="printSchedule()">Print Schedule</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    
+    <script>
+        // Initialize variables
+        let pieChart;
+        const { jsPDF } = window.jspdf;
+        
+        // DOM Content Loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set up range sliders
+            setupRangeSliders();
+            
+            // Set default interest rates based on loan type
+            updateInterestRate();
+            
+            // Load dark mode preference
+            loadDarkModePreference();
+        });
+        
+        function setupRangeSliders() {
+            // Principal range slider
+            const principalInput = document.getElementById('principal');
+            const principalRange = document.getElementById('principal-range');
+            
+            principalInput.addEventListener('input', function() {
+                principalRange.value = this.value;
+            });
+            
+            principalRange.addEventListener('input', function() {
+                principalInput.value = this.value;
+            });
+            
+            // Rate range slider
+            const rateInput = document.getElementById('rate');
+            const rateRange = document.getElementById('rate-range');
+            
+            rateInput.addEventListener('input', function() {
+                rateRange.value = this.value;
+            });
+            
+            rateRange.addEventListener('input', function() {
+                rateInput.value = this.value;
+            });
+            
+            // Tenure range slider
+            const tenureInput = document.getElementById('tenure');
+            const tenureRange = document.getElementById('tenure-range');
+            
+            tenureInput.addEventListener('input', function() {
+                tenureRange.value = this.value;
+            });
+            
+            tenureRange.addEventListener('input', function() {
+                tenureInput.value = this.value;
+            });
+        }
+        
+        function updateInterestRate() {
+            const loanType = document.getElementById('loan-type').value;
+            let rate;
+            
+            switch(loanType) {
+                case 'home':
+                    rate = 8.4;
+                    break;
+                case 'car':
+                    rate = 9.5;
+                    break;
+                case 'personal':
+                    rate = 12.0;
+                    break;
+                case 'education':
+                    rate = 10.5;
+                    break;
+                default:
+                    rate = 8.0;
+            }
+            
+            document.getElementById('rate').value = rate;
+            document.getElementById('rate-range').value = rate;
+        }
+        
+        function calculateEMI() {
+            // Get input values
+            const loanType = document.getElementById('loan-type').value;
+            const P = parseFloat(document.getElementById('principal').value);
+            const yearlyRate = parseFloat(document.getElementById('rate').value);
+            const years = parseFloat(document.getElementById('tenure').value);
+            
+            // Validate inputs
+            if (!P || P < 10000) {
+                alert("Please enter a valid loan amount (minimum ₹10,000)");
+                return;
+            }
+            
+            if (!yearlyRate || yearlyRate < 1 || yearlyRate > 30) {
+                alert("Please enter a valid interest rate (between 1% and 30%)");
+                return;
+            }
+            
+            if (!years || years < 1 || years > 30) {
+                alert("Please enter a valid tenure (between 1 and 30 years)");
+                return;
+            }
+            
+            // Calculate EMI
+            const R = yearlyRate / 12 / 100;
+            const N = years * 12;
+            const EMI = (P * R * Math.pow(1 + R, N)) / (Math.pow(1 + R, N) - 1);
+            const totalPayment = EMI * N;
+            const totalInterest = totalPayment - P;
+            
+            // Display results
+            document.getElementById('loan-type-display').textContent = 
+                loanType.charAt(0).toUpperCase() + loanType.slice(1) + " Loan";
+            document.getElementById('principal-display').textContent = '₹' + P.toLocaleString('en-IN');
+            document.getElementById('rate-display').textContent = yearlyRate.toFixed(2) + '%';
+            document.getElementById('tenure-display').textContent = years + ' years (' + N + ' months)';
+            document.getElementById('emi-amount').textContent = '₹' + EMI.toFixed(2);
+            document.getElementById('total-interest').textContent = '₹' + totalInterest.toLocaleString('en-IN', {maximumFractionDigits: 2});
+            document.getElementById('total-payment').textContent = '₹' + totalPayment.toLocaleString('en-IN', {maximumFractionDigits: 2});
+            
+            // Generate Amortization Table
+            generateAmortizationTable(P, yearlyRate, years, EMI);
+            
+            // Generate Pie Chart
+            generatePieChart(P, totalInterest);
+        }
+        
+        function generateAmortizationTable(P, yearlyRate, years, EMI) {
+            const tableBody = document.getElementById('amortization-body');
+            tableBody.innerHTML = '';
+            
+            let balance = P;
+            const monthlyRate = yearlyRate / 12 / 100;
+            const N = years * 12;
+            
+            // Show only first 12 months and last 12 months by default
+            const showFullTable = N <= 24; // Show full table if tenure is 2 years or less
+            
+            for (let month = 1; month <= N; month++) {
+                const interest = balance * monthlyRate;
+                const principal = EMI - interest;
+                balance -= principal;
+                
+                // Avoid negative balance in the last month
+                if (balance < 0) balance = 0;
+                
+                // Skip months if not showing full table
+                if (!showFullTable) {
+                    if (month > 6 && month < N - 6 && month !== N) {
+                        if (month === 7) {
+                            // Add a row indicating skipped months
+                            const skipRow = document.createElement('tr');
+                            skipRow.innerHTML = `
+                                <td colspan="5" style="text-align: center; font-style: italic;">
+                                    ... ${N - 12} months not shown ...
+                                </td>
+                            `;
+                            tableBody.appendChild(skipRow);
+                        }
+                        continue;
+                    }
+                }
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${month}</td>
+                    <td>₹${EMI.toFixed(2)}</td>
+                    <td>₹${principal.toFixed(2)}</td>
+                    <td>₹${interest.toFixed(2)}</td>
+                    <td>₹${balance.toFixed(2)}</td>
+                `;
+                tableBody.appendChild(row);
+            }
+        }
+        
+        function generatePieChart(principal, totalInterest) {
+            const ctx = document.getElementById('pie-chart').getContext('2d');
+            
+            // Destroy previous chart if exists
+            if (pieChart) {
+                pieChart.destroy();
+            }
+            
+            pieChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Principal', 'Interest'],
+                    datasets: [{
+                        data: [principal, totalInterest],
+                        backgroundColor: ['#0066cc', '#ff6b6b'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${label}: ₹${value.toLocaleString('en-IN')} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function resetForm() {
+            document.getElementById('principal').value = '';
+            document.getElementById('principal-range').value = 1000000;
+            document.getElementById('rate').value = '';
+            document.getElementById('rate-range').value = 8.5;
+            document.getElementById('tenure').value = '';
+            document.getElementById('tenure-range').value = 5;
+            
+            document.getElementById('loan-type-display').textContent = '-';
+            document.getElementById('principal-display').textContent = '₹0';
+            document.getElementById('rate-display').textContent = '0%';
+            document.getElementById('tenure-display').textContent = '0 years';
+            document.getElementById('emi-amount').textContent = '₹0';
+            document.getElementById('total-interest').textContent = '₹0';
+            document.getElementById('total-payment').textContent = '₹0';
+            
+            document.getElementById('amortization-body').innerHTML = '';
+            
+            if (pieChart) {
+                pieChart.destroy();
+            }
+            
+            // Reset to default interest rate
+            updateInterestRate();
+        }
+        
+        function downloadPDF() {
+            const doc = new jsPDF();
+            
+            // Add title
+            doc.setFontSize(18);
+            doc.text('Bank of Baroda - EMI Calculator Report', 105, 15, { align: 'center' });
+            
+            // Add date
+            doc.setFontSize(10);
+            doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 105, 22, { align: 'center' });
+            
+            // Add loan details
+            doc.setFontSize(12);
+            doc.text('Loan Details:', 14, 30);
+            
+            const loanDetails = [
+                ['Loan Type:', document.getElementById('loan-type-display').textContent],
+                ['Loan Amount:', document.getElementById('principal-display').textContent],
+                ['Interest Rate:', document.getElementById('rate-display').textContent],
+                ['Loan Tenure:', document.getElementById('tenure-display').textContent],
+                ['Monthly EMI:', document.getElementById('emi-amount').textContent],
+                ['Total Interest:', document.getElementById('total-interest').textContent],
+                ['Total Payment:', document.getElementById('total-payment').textContent]
+            ];
+            
+            doc.autoTable({
+                startY: 35,
+                head: [['Item', 'Value']],
+                body: loanDetails,
+                theme: 'grid',
+                headStyles: { fillColor: [0, 102, 204] },
+                margin: { left: 14 }
+            });
+            
+            // Add amortization table
+            doc.setFontSize(12);
+            doc.text('Amortization Schedule:', 14, doc.autoTable.previous.finalY + 15);
+            
+            const table = document.getElementById('amortization-table');
+            const rows = table.querySelectorAll('tr');
+            const tableData = [];
+            
+            rows.forEach(row => {
+                const rowData = [];
+                row.querySelectorAll('th, td').forEach(cell => {
+                    rowData.push(cell.textContent.replace('₹', ''));
+                });
+                tableData.push(rowData);
+            });
+            
+            doc.autoTable({
+                startY: doc.autoTable.previous.finalY + 20,
+                head: [tableData[0]],
+                body: tableData.slice(1),
+                theme: 'grid',
+                headStyles: { fillColor: [0, 102, 204] },
+                margin: { left: 14 },
+                styles: { fontSize: 8 },
+                pageBreak: 'auto'
+            });
+            
+            // Save the PDF
+            doc.save('Bank_of_Baroda_EMI_Calculation.pdf');
+        }
+        
+        function printSchedule() {
+            const printContent = `
+                <h1>Bank of Baroda - EMI Calculator Report</h1>
+                <p>Generated on: ${new Date().toLocaleDateString()}</p>
+                
+                <h2>Loan Details</h2>
+                <table border="1" cellpadding="5" cellspacing="0" style="width:100%; border-collapse:collapse;">
+                    <tr style="background-color:#0066cc; color:white;">
+                        <th>Item</th>
+                        <th>Value</th>
+                    </tr>
+                    <tr>
+                        <td>Loan Type</td>
+                        <td>${document.getElementById('loan-type-display').textContent}</td>
+                    </tr>
+                    <tr>
+                        <td>Loan Amount</td>
+                        <td>${document.getElementById('principal-display').textContent}</td>
+                    </tr>
+                    <tr>
+                        <td>Interest Rate</td>
+                        <td>${document.getElementById('rate-display').textContent}</td>
+                    </tr>
+                    <tr>
+                        <td>Loan Tenure</td>
+                        <td>${document.getElementById('tenure-display').textContent}</td>
+                    </tr>
+                    <tr>
+                        <td>Monthly EMI</td>
+                        <td>${document.getElementById('emi-amount').textContent}</td>
+                    </tr>
+                    <tr>
+                        <td>Total Interest</td>
+                        <td>${document.getElementById('total-interest').textContent}</td>
+                    </tr>
+                    <tr>
+                        <td>Total Payment</td>
+                        <td>${document.getElementById('total-payment').textContent}</td>
+                    </tr>
+                </table>
+                
+                <h2>Amortization Schedule</h2>
+                ${document.getElementById('amortization-table').outerHTML}
+                
+                <style>
+                    @media print {
+                        body { font-family: Arial; padding: 20px; }
+                        h1 { color: #0066cc; text-align: center; }
+                        h2 { color: #0066cc; border-bottom: 1px solid #0066cc; }
+                        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+                        th { background-color: #0066cc !important; color: white !important; }
+                        tr:nth-child(even) { background-color: #f2f2f2; }
+                    }
+                </style>
+            `;
+            
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(printContent);
+            printWindow.document.close();
+            printWindow.focus();
+            printWindow.print();
+            printWindow.close();
+        }
+        
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+        }
+        
+        function loadDarkModePreference() {
+            if (localStorage.getItem('darkMode') === 'true') {
+                document.body.classList.add('dark-mode');
+            }
+        }
+    </script>
+</body>
+</html>
